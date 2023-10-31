@@ -4,16 +4,30 @@
 #include <cstdio>
 #include "sess.h"
 
+#define FILENAME "/tmp/filename"
+#define BUFSIZE 10000
+#define RBUFSIZE 50000
 IUINT32 iclock();
 
-int main() {
+int main(int argc, char* argv[]) {
     struct timeval time;
     gettimeofday(&time, NULL);
     srand((time.tv_sec * 1000) + (time.tv_usec / 1000));
 
-    UDPSession *sess = UDPSession::DialWithOptions("127.0.0.1", 9999, 2,2);
-    sess->NoDelay(1, 20, 2, 1);
-    sess->WndSize(128, 128);
+    UDPSession *sess = NULL;
+    if (argc == 1 || (argc > 1 && strcmp(argv[1], "127.0.0.1") == 0)) {
+        sess = UDPSession::DialWithOptions("127.0.0.1", 9999, 2, 2);
+    }
+    if (argc > 2) {
+        sess = UDPSession::DialWithOptions(argv[1], 9999, 2, 2);
+    }
+    if (sess == NULL) {
+        printf("init session failed.\n");
+        return -1;
+    }
+    // sess->NoDelay(1, 20, 2, 1);
+    sess->NoDelay(0, 40, 0, 0);
+    sess->WndSize(128*8, 128*8);
     sess->SetMtu(1400);
     sess->SetStreamMode(true);
     sess->SetDSCP(46);
@@ -21,23 +35,54 @@ int main() {
     assert(sess != nullptr);
     ssize_t nsent = 0;
     ssize_t nrecv = 0;
-    char *buf = (char *) malloc(128);
+    ssize_t n = 0;
+    int readed = 0, writed = 0, total = 0;
 
-    for (int i = 0; i < 10; i++) {
-        sprintf(buf, "message:%d", i);
-        auto sz = strlen(buf);
-        sess->Write(buf, sz);
-        sess->Update(iclock());
-        memset(buf, 0, 128);
-        ssize_t n = 0;
-        do {
-            n = sess->Read(buf, 128);
-            if (n > 0) { printf("%s\n", buf); }
-            usleep(33000);
+    // char *buf = (char *) malloc(128);
+    if ((argc == 3 &&  strcmp(argv[2], "send") == 0)
+    || (argc == 2 && strcmp(argv[1], "127.0.0.1") != 0 && strcmp(argv[2], "send") == 0)) {
+        char buf[RBUFSIZE];
+        FILE* file = fopen(FILENAME, "rb");
+        if (!file ) {
+            printf("open file %s failed\n", FILENAME);
+        }
+        printf("sending file data...\n");
+        while ((readed = fread(buf, 1, BUFSIZE, file)) > 0) {
+            writed = sess->Write(buf, readed);
+            total += writed;
+            printf("read %d send %d total %d\n", readed, writed, total);
             sess->Update(iclock());
-        } while(n==0);
+            do {                
+                n = sess->Read(buf, BUFSIZE);
+            } while(n > 0);
+            if (n <= 0) {
+                usleep(33000);         
+            }
+        }
+        sess->Write("bye", 3);
+        sess->Update(iclock());
+        return 0;
     }
 
+    printf("recving file data...\n");
+    char rbuf[RBUFSIZE];
+    n = sess->Write(FILENAME, sizeof(FILENAME)); // write filename trigger response from server side
+    while (1) {
+        sess->Update(iclock());
+        n = sess->Read(rbuf, RBUFSIZE);
+        if (n > 0) {
+            total += n;
+            printf("recv %lu total %d\n", n, total);
+            if (strncmp(&rbuf[n-3], "bye", 3) == 0) {
+                break;
+            }
+        }
+        else {
+            usleep(33000);
+        }
+    }
+
+    printf("recv total %d\n", total);
     UDPSession::Destroy(sess);
 }
 

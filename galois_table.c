@@ -5,7 +5,8 @@
 #include "galois.h"
 
 // The number of elements in the field.
-const int fieldSize = 256;
+// const int fieldSize = 256;
+#define fieldSize 256 //
 
 // The polynomial used to generate the logarithm table.
 //

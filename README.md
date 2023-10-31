@@ -31,13 +31,22 @@ End
 ```
 
 The ```Read/Write/Update``` functions of libkcp are ***guaranteed*** to be ***non-blocking***.       
-Please read ```kcp_test.cpp fec_test.cpp``` for library usage.        
-
+Please read ```kcp_test.cpp fec_test.cpp``` for library usage. 
+$
+$mkdir build && cd build       
+$cmake ../
+$make
+$
+$
 ## ***Demo***
 start echo server(golang)       
 ```
 $go get github.com/xtaci/kcp-go
 $go run kcpserver.go
+$
+$cd build
+$WORKMODE=recv sudo -E /usr/local/go/bin/go run ../kcpserver.go 
+$sudo -E /usr/local/go/bin/go run ../kcpserver.go 
 ```   
 compile and run libkcp(Best with CLion), and watch output.      
 
