@@ -90,10 +90,21 @@ func handle_client(conn *kcp.UDPSession, ch chan int) {
 			total += writed
 			fmt.Printf("count %d read %d write %d total %d\n", count, n, writed, total)
 		}
-		fmt.Println("finish sending file.")
 		conn.Write([]byte("bye"))
-		time.Sleep(2 * time.Second)
-		ch <- 1
+                for {
+		    n, err = conn.Read(readbuf)
+		    if err == io.EOF {
+                        break
+                    }
+		    if err != nil {
+		    }
+                    if n == 3 && bytes.Equal(readbuf[0:3], []byte("bye")) {
+		        ch <- 1
+		        fmt.Println("finish sending file.")
+                        break
+                    }
+		    time.Sleep(1 * time.Second)
+                }
 	} else {
 		buf := make([]byte, 65536)
 		for {

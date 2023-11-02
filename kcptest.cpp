@@ -76,6 +76,8 @@ int main(int argc, char* argv[]) {
             total += n;
             printf("recv %lu total %d\n", n, total);
             if (strncmp(&rbuf[n-3], "bye", 3) == 0) {
+                sess->Write("bye", 3);
+                sleep(1);
                 break;
             }
         }
