@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
         sess = KCPSession::Dial(argv[1], PORT);
     }
     if (sess == NULL) {
-        printf("init session failed.\n");
+        printf("init session failed.[cmd ip op]\n");
         return -1;
     }
     // sess->NoDelay(1, 20, 2, 1);
@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
         while ((readed = fread(buf, 1, BUFSIZE, file)) > 0) {
             writed = sess->Write(buf, readed);
             total += writed;
-            printf("read %d send %d total %d\n", readed, writed, total);
+            // printf("read %d send %d total %d\n", readed, writed, total);
             sess->Update(iclock());
             do {                
                 n = sess->Read(buf, BUFSIZE);
@@ -74,9 +74,10 @@ int main(int argc, char* argv[]) {
         n = sess->Read(rbuf, RBUFSIZE);
         if (n > 0) {
             total += n;
-            printf("recv %lu total %d\n", n, total);
+            // printf("recv %lu total %d\n", n, total);
             if (strncmp(&rbuf[n-3], "bye", 3) == 0) {
                 sess->Write("bye", 3);
+                sess->Update(iclock());
                 sleep(1);
                 break;
             }

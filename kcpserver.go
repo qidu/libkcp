@@ -12,13 +12,14 @@ import (
 )
 
 const port = ":9999"
+
 func ListenTest() (*kcp.Listener, error) {
 	usefec := os.Getenv("FEC")
 	if usefec == "" {
-    	    return kcp.ListenWithOptions(port, nil, 0, 0)
+		return kcp.ListenWithOptions(port, nil, 0, 0)
 	}
-        fmt.Println("init with fec(2,2)")
-    	return kcp.ListenWithOptions(port, nil, 2, 2)
+	fmt.Println("init with fec(2,2)")
+	return kcp.ListenWithOptions(port, nil, 2, 2)
 }
 
 func server() {
@@ -88,23 +89,23 @@ func handle_client(conn *kcp.UDPSession, ch chan int) {
 				continue
 			}
 			total += writed
-			fmt.Printf("count %d read %d write %d total %d\n", count, n, writed, total)
+			// fmt.Printf("count %d read %d write %d total %d\n", count, n, writed, total)
 		}
 		conn.Write([]byte("bye"))
-                for {
-		    n, err = conn.Read(readbuf)
-		    if err == io.EOF {
-                        break
-                    }
-		    if err != nil {
-		    }
-                    if n == 3 && bytes.Equal(readbuf[0:3], []byte("bye")) {
-		        ch <- 1
-		        fmt.Println("finish sending file.")
-                        break
-                    }
-		    time.Sleep(1 * time.Second)
-                }
+		for {
+			n, err = conn.Read(readbuf)
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+			}
+			if n == 3 && bytes.Equal(readbuf[0:3], []byte("bye")) {
+				ch <- 1
+				fmt.Println("finish sending file.")
+				break
+			}
+			time.Sleep(1 * time.Second)
+		}
 	} else {
 		buf := make([]byte, 65536)
 		for {
@@ -114,7 +115,7 @@ func handle_client(conn *kcp.UDPSession, ch chan int) {
 				panic(err)
 			}
 			total += n
-			fmt.Printf("count %d receive %d total %d\n", count, n, total)
+			// fmt.Printf("count %d receive %d total %d\n", count, n, total)
 			if bytes.Equal(buf[n-3:n], []byte("bye")) {
 				ch <- 1
 				fmt.Println("finish recving file.")
