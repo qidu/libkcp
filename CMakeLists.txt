@@ -14,7 +14,7 @@ project(kcp)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(LIB_SOURCES2
-  session.cpp
+  session.c
   ikcp.c)
 
 set(LIB_NAME kcp)
@@ -32,7 +32,7 @@ set(LIB_SOURCES
 add_library(${LIB_NAME} STATIC ${LIB_SOURCES})
 
 set(MAIN_TEST kcp_test.cpp)
-set(MAIN_TEST2 kcp_test_nofec.cpp)
+set(MAIN_TEST2 kcp_test_lite.cpp)
 set(FEC_TEST fec_test.cpp)
 
 add_executable(kcp_test ${SOURCE_FILES} ${MAIN_TEST})
