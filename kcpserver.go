@@ -16,6 +16,7 @@ const port = ":9999"
 func ListenTest() (*kcp.Listener, error) {
 	usefec := os.Getenv("FEC")
 	if usefec == "" {
+	        fmt.Println("init without fec.")
 		return kcp.ListenWithOptions(port, nil, 0, 0)
 	}
 	fmt.Println("init with fec(2,2)")
