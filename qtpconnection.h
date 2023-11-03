@@ -1,7 +1,6 @@
 #ifndef QTP_CONN_H
 #define QTP_CONN_H
 
-#include "ikcp.h"
 #include <sys/types.h>
 #include <sys/time.h>
 #include <stdint.h>
@@ -11,7 +10,7 @@ typedef unsigned char byte;
 
 typedef struct {
     int sockfd;
-    ikcpcb *kcp;
+    void *handle;
     byte buf[2048];
     byte streambuf[65535];
     size_t streambufsiz;

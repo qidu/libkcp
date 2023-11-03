@@ -1,9 +1,12 @@
 #include "qtpconnection.h"
+#include "ikcp.h"
 #include <sys/socket.h>
 #include <sys/fcntl.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <string.h>
+
+typedef struct IKCPCB Handle;
 
 static QTPConnection* dialIPv6(const char *ip, uint16_t port, bool stream);
 static QTPConnection *new_connection(int sockfd, bool stream);
@@ -37,9 +40,9 @@ static IUINT32 iclock() {
 
 void qtp_setstream(QTPConnection* conn, bool yes) {
     if (yes) {
-        conn->kcp->stream = 1;
+        ((Handle*)conn->handle)->stream = 1;
     } else {
-        conn->kcp->stream = 0;
+        ((Handle*)conn->handle)->stream = 0;
     }
 }
 
@@ -49,7 +52,7 @@ int qtp_setdscp(QTPConnection *conn, int iptos) {
 }
 
 ssize_t qtp_write(QTPConnection *conn, const char *buf, size_t sz) {
-    int n = ikcp_send(conn->kcp, buf, (int)sz);
+    int n = ikcp_send((Handle*)conn->handle, buf, (int)sz);
     if (n == 0) {
         return sz;
     } else return n;
@@ -70,15 +73,15 @@ ssize_t qtp_read(QTPConnection *conn, char *buf, size_t sz) {
         return n;
     }
 
-    int psz = ikcp_peeksize(conn->kcp);
+    int psz = ikcp_peeksize((Handle*)conn->handle);
     if (psz <= 0) {
         return 0;
     }
 
     if (psz <= sz) {
-        return (ssize_t) ikcp_recv(conn->kcp, buf, (int)sz);
+        return (ssize_t) ikcp_recv((Handle*)conn->handle, buf, (int)sz);
     } else {
-        ikcp_recv(conn->kcp, (char *) conn->streambuf, sizeof(conn->streambuf));
+        ikcp_recv((Handle*)conn->handle, (char *) conn->streambuf, sizeof(conn->streambuf));
         memcpy(buf, conn->streambuf, sz);
         conn->streambufsiz = psz - sz;
         memmove(conn->streambuf, conn->streambuf + sz, psz - sz);
@@ -91,13 +94,13 @@ void qtp_update(QTPConnection *conn) {
         ssize_t n = recv(conn->sockfd, conn->buf, sizeof(conn->buf), 0);
         if (n > 0) {
             // fec disabled
-            ikcp_input(conn->kcp, (char *) (conn->buf), n);
+            ikcp_input((Handle*)conn->handle, (char *) (conn->buf), n);
         } else {
             break;
         }
     }
-    conn->kcp->current = iclock();
-    ikcp_flush(conn->kcp);
+    ((Handle*)conn->handle)->current = iclock();
+    ikcp_flush((Handle*)conn->handle);
 }
 
 ssize_t output(QTPConnection *conn, const void *buffer, size_t length) {
@@ -118,16 +121,16 @@ int out_wrapper(const char *buf, int len, struct IKCPCB *kcp, void *user) {
 void qtp_close(QTPConnection *conn) {
     if (NULL == conn) return;
     if (0 != conn->sockfd) { close(conn->sockfd); }
-    if (NULL != conn->kcp) { ikcp_release(conn->kcp); }
+    if (NULL != conn->handle) { ikcp_release((Handle*)conn->handle); }
 }
 
 int qtp_throughput(QTPConnection* conn, int sndwnd, int rcvwnd, int mtu) {
-    ikcp_wndsize(conn->kcp, sndwnd, rcvwnd);
-    return ikcp_setmtu(conn->kcp, mtu);
+    ikcp_wndsize((Handle*)conn->handle, sndwnd, rcvwnd);
+    return ikcp_setmtu((Handle*)conn->handle, mtu);
 }
 
 int qtp_nodelay(QTPConnection* conn, int nodelay, int interval, int resend, int nc) {
-    return ikcp_nodelay(conn->kcp, nodelay, interval, resend, nc);
+    return ikcp_nodelay((Handle*)conn->handle, nodelay, interval, resend, nc);
 }
 
 QTPConnection *new_connection(int sockfd, bool stream) {
@@ -145,9 +148,9 @@ QTPConnection *new_connection(int sockfd, bool stream) {
         return NULL;
     }
     conn->sockfd = sockfd;
-    conn->kcp = ikcp_create((IUINT32)rand(), conn);
-    conn->kcp->output = out_wrapper;
-    conn->kcp->stream = stream ? 1 : 0;
+    conn->handle = ikcp_create((IUINT32)rand(), conn);
+    ((Handle*)conn->handle)->output = out_wrapper;
+    ((Handle*)conn->handle)->stream = stream ? 1 : 0;
     return conn;
 }
 

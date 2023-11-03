@@ -9,13 +9,7 @@
 #define RBUFSIZE 50000
 #define PORT 9999
 
-IUINT32 iclock();
-
 int main(int argc, char* argv[]) {
-    struct timeval time;
-    gettimeofday(&time, NULL);
-    srand((time.tv_sec * 1000) + (time.tv_usec / 1000));
-
     QTPConnection *conn = NULL;
     if (argc == 1 || (argc > 1 && strcmp(argv[1], "127.0.0.1") == 0)) {
         conn = qtp_dial("127.0.0.1", PORT, true);
