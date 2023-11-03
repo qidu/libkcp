@@ -17,7 +17,7 @@ set(LIB_SOURCES2
   qtpconnection.c
   ikcp.c)
 
-set(LIB_NAME kcp)
+set(LIB_NAME qtp)
 set(LIB_SOURCES
    ikcp.c
    sess.cpp
@@ -29,15 +29,14 @@ set(LIB_SOURCES
    fec.cpp
    galois_table.c) 
 
-add_library(${LIB_NAME} STATIC ${LIB_SOURCES})
+add_library(${LIB_NAME} STATIC ${LIB_SOURCES2})
 
 set(MAIN_TEST kcp_test.cpp)
 set(MAIN_TEST2 qtp_test.c)
 set(FEC_TEST fec_test.cpp)
 
-add_executable(kcp_test ${SOURCE_FILES} ${MAIN_TEST})
-add_executable(qtp_test ${LIB_SOURCES2} ${MAIN_TEST2})
-target_link_libraries(kcp_test ${LIB_NAME})
+add_executable(kcp_test ${LIB_SOURCES} ${MAIN_TEST})
+add_executable(fec_test ${LIB_SOURCES} ${FEC_TEST})
 
-add_executable(fec_test ${SOURCE_FILES} ${FEC_TEST})
+add_executable(qtp_test ${LIB_SOURCES2} ${MAIN_TEST2})
 target_link_libraries(fec_test ${LIB_NAME})

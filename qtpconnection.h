@@ -6,16 +6,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-typedef unsigned char byte;
-
-typedef struct {
-    int sockfd;
-    void *handle;
-    byte buf[2048];
-    byte streambuf[65535];
-    size_t streambufsiz;
-    uint32_t pktidx;
-} QTPConnection;
+typedef void QTPConnection;
 
 QTPConnection *qtp_dial(const char *ip, uint16_t port, bool stream);
 void qtp_update(QTPConnection* conn);
@@ -25,6 +16,5 @@ int qtp_setdscp(QTPConnection* conn, int dscp);
 int qtp_nodelay(QTPConnection* conn, int nodelay, int interval, int resend, int nc);
 int qtp_throughput(QTPConnection* conn, int sndwnd, int rcvwnd, int mtu);
 void qtp_close(QTPConnection *conn);
-uint32_t qtp_current(); // ms
 
 #endif //QTP_CONN_H
