@@ -100,8 +100,8 @@ func handle_client(conn *kcp.UDPSession, ch chan int) {
 			if err != nil {
 			}
 			if n == 3 && bytes.Equal(readbuf[0:3], []byte("bye")) {
-				ch <- 1
 				fmt.Println("finish sending file.")
+				ch <- 1
 				break
 			}
 			time.Sleep(1 * time.Second)
@@ -117,8 +117,8 @@ func handle_client(conn *kcp.UDPSession, ch chan int) {
 			total += n
 			// fmt.Printf("count %d receive %d total %d\n", count, n, total)
 			if bytes.Equal(buf[n-3:n], []byte("bye")) {
-				ch <- 1
 				fmt.Println("finish recving file.")
+				ch <- 1
 				break
 			}
 		}

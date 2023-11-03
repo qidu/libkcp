@@ -1,8 +1,8 @@
 #include <unistd.h>
 #include <sys/time.h>
-#include <cstring>
-#include <cstdio>
-#include "session.h"
+#include <string.h>
+#include <stdio.h>
+#include "qtpconnection.h"
 
 #define FILENAME "/tmp/filename"
 #define BUFSIZE 10000
@@ -33,13 +33,11 @@ int main(int argc, char* argv[]) {
     qtp_throughput(conn, 128*8, 128*8, 1400);
     qtp_setdscp(conn, 46);
 
-    assert(conn != nullptr);
     ssize_t nsent = 0;
     ssize_t nrecv = 0;
     ssize_t n = 0;
     int readed = 0, writed = 0, total = 0;
 
-    // char *buf = (char *) malloc(128);
     if ((argc == 3 &&  strcmp(argv[2], "send") == 0)
     || (argc == 2 && strcmp(argv[1], "127.0.0.1") != 0 && strcmp(argv[2], "send") == 0)) {
         char buf[RBUFSIZE];

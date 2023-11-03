@@ -14,7 +14,7 @@ project(kcp)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(LIB_SOURCES2
-  session.c
+  qtpconnection.c
   ikcp.c)
 
 set(LIB_NAME kcp)
@@ -32,11 +32,11 @@ set(LIB_SOURCES
 add_library(${LIB_NAME} STATIC ${LIB_SOURCES})
 
 set(MAIN_TEST kcp_test.cpp)
-set(MAIN_TEST2 kcp_test_lite.cpp)
+set(MAIN_TEST2 qtp_test.c)
 set(FEC_TEST fec_test.cpp)
 
 add_executable(kcp_test ${SOURCE_FILES} ${MAIN_TEST})
-add_executable(kcp_test_nofec ${LIB_SOURCES2} ${MAIN_TEST2})
+add_executable(qtp_test ${LIB_SOURCES2} ${MAIN_TEST2})
 target_link_libraries(kcp_test ${LIB_NAME})
 
 add_executable(fec_test ${SOURCE_FILES} ${FEC_TEST})

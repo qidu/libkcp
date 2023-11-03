@@ -1,4 +1,4 @@
-#include "session.h"
+#include "qtpconnection.h"
 #include <sys/socket.h>
 #include <sys/fcntl.h>
 #include <arpa/inet.h>
@@ -7,13 +7,13 @@
 
 static QTPConnection* dialIPv6(const char *ip, uint16_t port, bool stream);
 static QTPConnection *new_connection(int sockfd, bool stream);
-static ssize_t output(const void *buffer, size_t length);
+static ssize_t output(QTPConnection *conn, const void *buffer, size_t length);
 static int out_wrapper(const char *buf, int len, struct IKCPCB *kcp, void *user);
 
 uint32_t qtp_current() {
     struct timeval time;
     gettimeofday(&time, NULL);
-    return uint32_t((time.tv_sec * 1000) + (time.tv_usec / 1000));
+    return (uint32_t)(time.tv_sec * 1000) + (time.tv_usec / 1000);
 }
 
 static void itimeofday(long *sec, long *usec) {
@@ -49,7 +49,7 @@ int qtp_setdscp(QTPConnection *conn, int iptos) {
 }
 
 ssize_t qtp_write(QTPConnection *conn, const char *buf, size_t sz) {
-    int n = ikcp_send(conn->kcp, buf, int(sz));
+    int n = ikcp_send(conn->kcp, buf, (int)sz);
     if (n == 0) {
         return sz;
     } else return n;
@@ -76,7 +76,7 @@ ssize_t qtp_read(QTPConnection *conn, char *buf, size_t sz) {
     }
 
     if (psz <= sz) {
-        return (ssize_t) ikcp_recv(conn->kcp, buf, int(sz));
+        return (ssize_t) ikcp_recv(conn->kcp, buf, (int)sz);
     } else {
         ikcp_recv(conn->kcp, (char *) conn->streambuf, sizeof(conn->streambuf));
         memcpy(buf, conn->streambuf, sz);
@@ -116,9 +116,9 @@ int out_wrapper(const char *buf, int len, struct IKCPCB *kcp, void *user) {
 }
 
 void qtp_close(QTPConnection *conn) {
-    if (nullptr == conn) return;
+    if (NULL == conn) return;
     if (0 != conn->sockfd) { close(conn->sockfd); }
-    if (nullptr != conn->kcp) { ikcp_release(conn->kcp); }
+    if (NULL != conn->kcp) { ikcp_release(conn->kcp); }
 }
 
 int qtp_throughput(QTPConnection* conn, int sndwnd, int rcvwnd, int mtu) {
@@ -133,19 +133,19 @@ int qtp_nodelay(QTPConnection* conn, int nodelay, int interval, int resend, int 
 QTPConnection *new_connection(int sockfd, bool stream) {
     int flags = fcntl(sockfd, F_GETFL, 0);
     if (flags < 0) {
-        return nullptr;
+        return NULL;
     }
 
     if (fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) < 0) {
-        return nullptr;
+        return NULL;
     }
 
     QTPConnection *conn = (QTPConnection*)malloc(sizeof(QTPConnection));
     if (!conn) {
-        return nullptr;
+        return NULL;
     }
     conn->sockfd = sockfd;
-    conn->kcp = ikcp_create(IUINT32(rand()), conn);
+    conn->kcp = ikcp_create((IUINT32)rand(), conn);
     conn->kcp->output = out_wrapper;
     conn->kcp->stream = stream ? 1 : 0;
     return conn;
@@ -162,16 +162,16 @@ QTPConnection *qtp_dial(const char *ip, uint16_t port, bool stream) {
     } else if (ret == 0) { // try ipv6
         return dialIPv6(ip, port, stream);
     } else if (ret == -1) {
-        return nullptr;
+        return NULL;
     }
 
     int sockfd = socket(PF_INET, SOCK_DGRAM, 0);
     if (sockfd == -1) {
-        return nullptr;
+        return NULL;
     }
     if (connect(sockfd, (struct sockaddr *) &saddr, sizeof(struct sockaddr)) < 0) {
         close(sockfd);
-        return nullptr;
+        return NULL;
     }
 
     return new_connection(sockfd, stream);
@@ -183,16 +183,16 @@ QTPConnection *dialIPv6(const char *ip, uint16_t port, bool stream) {
     saddr.sin6_family = AF_INET6;
     saddr.sin6_port = htons(port);
     if (inet_pton(AF_INET6, ip, &(saddr.sin6_addr)) != 1) {
-        return nullptr;
+        return NULL;
     }
 
     int sockfd = socket(PF_INET6, SOCK_DGRAM, 0);
     if (sockfd == -1) {
-        return nullptr;
+        return NULL;
     }
     if (connect(sockfd, (struct sockaddr *) &saddr, sizeof(struct sockaddr_in6)) < 0) {
         close(sockfd);
-        return nullptr;
+        return NULL;
     }
 
     return new_connection(sockfd, stream);

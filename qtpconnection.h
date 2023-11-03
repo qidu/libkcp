@@ -1,20 +1,21 @@
-#ifndef KCP_SESS_H
-#define KCP_SESS_H
+#ifndef QTP_CONN_H
+#define QTP_CONN_H
 
 #include "ikcp.h"
 #include <sys/types.h>
 #include <sys/time.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef unsigned char byte;
 
 typedef struct {
-    int sockfd{0};
-    ikcpcb *kcp{nullptr};
+    int sockfd;
+    ikcpcb *kcp;
     byte buf[2048];
     byte streambuf[65535];
-    size_t streambufsiz{0};
-    uint32_t pktidx{0};
+    size_t streambufsiz;
+    uint32_t pktidx;
 } QTPConnection;
 
 QTPConnection *qtp_dial(const char *ip, uint16_t port, bool stream);
@@ -27,4 +28,4 @@ int qtp_throughput(QTPConnection* conn, int sndwnd, int rcvwnd, int mtu);
 void qtp_close(QTPConnection *conn);
 uint32_t qtp_current(); // ms
 
-#endif //KCP_SESS_H
+#endif //QTP_CONN_H
