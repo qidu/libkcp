@@ -86,7 +86,7 @@ UDPSession::createSession(int sockfd) {
 
     UDPSession *sess = new(UDPSession);
     sess->m_sockfd = sockfd;
-    sess->m_kcp = ikcp_create(IUINT32(rand()), sess);
+    sess->m_kcp = ikcp_create(IUINT32(rand()), 0x0, sess);
     sess->m_kcp->output = sess->out_wrapper;
     return sess;
 }

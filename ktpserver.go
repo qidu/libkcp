@@ -8,7 +8,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/xtaci/kcp-go"
+//	"github.com/xtaci/kcp-go"
+	"github.com/qidu/ktp-go/v6"
 )
 
 const port = ":9999"
@@ -17,10 +18,10 @@ func ListenTest() (*kcp.Listener, error) {
 	usefec := os.Getenv("FEC")
 	if usefec == "" {
 	        fmt.Println("init without fec.")
-		return kcp.ListenWithOptions(port, nil, 0, 0)
+		return kcp.ListenWithOptions(port, nil, 0, 0, 0x1234)
 	}
 	fmt.Println("init with fec(2,2)")
-	return kcp.ListenWithOptions(port, nil, 2, 2)
+	return kcp.ListenWithOptions(port, nil, 2, 2, 0)
 }
 
 func server() {
@@ -90,7 +91,7 @@ func handle_client(conn *kcp.UDPSession, ch chan int) {
 				continue
 			}
 			total += writed
-			// fmt.Printf("count %d read %d write %d total %d\n", count, n, writed, total)
+			fmt.Printf("count %d read %d write %d total %d\n", count, n, writed, total)
 		}
 		conn.Write([]byte("bye"))
 		for {
@@ -116,7 +117,7 @@ func handle_client(conn *kcp.UDPSession, ch chan int) {
 				panic(err)
 			}
 			total += n
-			// fmt.Printf("count %d receive %d total %d\n", count, n, total)
+			fmt.Printf("count %d receive %d total %d\n", count, n, total)
 			if bytes.Equal(buf[n-3:n], []byte("bye")) {
 				fmt.Println("finish recving file.")
 				ch <- 1

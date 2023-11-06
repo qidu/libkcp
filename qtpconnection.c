@@ -175,7 +175,7 @@ __QTPConnection *new_connection(int sockfd, bool stream) {
         return NULL;
     }
     conn->sockfd = sockfd;
-    conn->handle = ikcp_create((IUINT32)rand(), conn);
+    conn->handle = ikcp_create((IUINT32)rand(), 0x1234, conn);
     conn->handle->output = out_wrapper;
     conn->handle->stream = stream ? 1 : 0;
     return conn;
