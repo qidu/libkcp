@@ -13,13 +13,7 @@ import (
 const port = ":29900"
 
 func ListenTest() (*kcp.Listener, error) {
-	usefec := os.Getenv("FEC")
-	if usefec == "" {
-	        fmt.Println("init without fec.")
-		return kcp.ListenWithOptions(port, nil, 0, 0, 0x1234)
-	}
-	fmt.Println("init with fec(2,2)")
-	return kcp.ListenWithOptions(port, nil, 2, 2, 0)
+    return kcp.ListenWithOptions(port, nil, 0, 0, 0x1234) // key 0x1234
 }
 
 func server() {

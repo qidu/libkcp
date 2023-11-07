@@ -25,11 +25,11 @@ int main(int argc, char* argv[]) {
 		else {
 			port = PROXY_PORT;
 		}
-		conn = qtp_dial(host, atoi(port), 0x1234, true);
+		conn = qtp_dial(host, atoi(port), 0x1234, true); // key 0x1234
     }
     else 
     {
-        conn = qtp_dial("127.0.0.1", 29900, 0x1234, true);
+        conn = qtp_dial("127.0.0.1", 29900, 0x1234, true); // key 0x1234
     }
     
     // qtp_nodelay(conn, 1, 20, 2, 1);

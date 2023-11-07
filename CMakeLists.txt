@@ -1,44 +1,16 @@
-##cmake_minimum_required(VERSION 2.8.7)
-#project(kcp)
-
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-
-#set(MAIN_TEST kcp_test.cpp)
-#set(FEC_TEST fec_test.cpp)
-#set(SOURCE_FILES ikcp.c sess.cpp galois.cpp galois_noasm.cpp matrix.cpp inversion_tree.cpp reedsolomon.cpp fec.cpp galois_table.c)
-#add_executable(kcp_test ${SOURCE_FILES} ${MAIN_TEST})
-#add_executable(fec_test ${SOURCE_FILES} ${FEC_TEST})
-
 cmake_minimum_required(VERSION 2.8.7)
-project(kcp)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+project(qtp)
 
-set(LIB_SOURCES2
+set(LIB_SOURCES_QTP
   qtpconnection.c
   ikcp.c)
 
 set(LIB_NAME qtp)
-set(LIB_SOURCES
-   ikcp.c
-   sess.cpp
-   galois.cpp
-   galois_noasm.cpp
-   matrix.cpp
-   inversion_tree.cpp
-   reedsolomon.cpp
-   fec.cpp
-   galois_table.c) 
 
-add_library(${LIB_NAME} STATIC ${LIB_SOURCES2})
+add_library(${LIB_NAME} STATIC ${LIB_SOURCES_QTP})
 
-set(MAIN_TEST kcp_test.cpp)
-set(MAIN_TEST2 qtp_test.c)
-set(MAIN_TEST3 qtproxy_client.c)
-set(FEC_TEST fec_test.cpp)
+set(QTP_FILETEST qtp_test.c)
+set(QTP_PROXY qtproxy_client.c)
 
-add_executable(kcp_test ${LIB_SOURCES} ${MAIN_TEST})
-add_executable(fec_test ${LIB_SOURCES} ${FEC_TEST})
-target_link_libraries(fec_test ${LIB_NAME})
-
-add_executable(qtp_test ${LIB_SOURCES2} ${MAIN_TEST2})
-add_executable(qtproxy_client ${LIB_SOURCES2} ${MAIN_TEST3})
+add_executable(qtp_filetest ${LIB_SOURCES_QTP} ${QTP_FILETEST})
+add_executable(qtproxy_client ${LIB_SOURCES_QTP} ${QTP_PROXY})
