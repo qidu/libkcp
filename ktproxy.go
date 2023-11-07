@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net"
 	"bufio"
-	"os"
 	"time"
 
 	"github.com/qidu/ktp-go/v6"
