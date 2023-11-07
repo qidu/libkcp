@@ -18,8 +18,8 @@ typedef struct {
     uint32_t pktidx;
 } __QTPConnection;
 
-static QTPConnection* dialIPv6(const char *ip, uint16_t port, bool stream);
-static __QTPConnection *new_connection(int sockfd, bool stream);
+static QTPConnection* dialIPv6(const char *ip, uint16_t port, unsigned int key, bool stream);
+static __QTPConnection *new_connection(int sockfd, unsigned int key, bool stream);
 static ssize_t output(QTPConnection *conn, const void *buffer, size_t length);
 static int out_wrapper(const char *buf, int len, struct IKCPCB *kcp, void *user);
 
@@ -160,7 +160,7 @@ int qtp_nodelay(QTPConnection* conn_, int nodelay, int interval, int resend, int
     return ikcp_nodelay(conn->handle, nodelay, interval, resend, nc);
 }
 
-__QTPConnection *new_connection(int sockfd, bool stream) {
+__QTPConnection *new_connection(int sockfd, unsigned int key, bool stream) {
     int flags = fcntl(sockfd, F_GETFL, 0);
     if (flags < 0) {
         return NULL;
@@ -175,13 +175,13 @@ __QTPConnection *new_connection(int sockfd, bool stream) {
         return NULL;
     }
     conn->sockfd = sockfd;
-    conn->handle = ikcp_create((IUINT32)rand(), 0x1234, conn);
+    conn->handle = ikcp_create((IUINT32)rand(), key, conn);
     conn->handle->output = out_wrapper;
     conn->handle->stream = stream ? 1 : 0;
     return conn;
 }
 
-QTPConnection *qtp_dial(const char *ip, uint16_t port, bool stream) {
+QTPConnection *qtp_dial(const char *ip, uint16_t port, unsigned int key, bool stream) {
     struct sockaddr_in saddr;
     memset(&saddr, 0, sizeof(saddr));
     saddr.sin_family = AF_INET;
@@ -190,7 +190,7 @@ QTPConnection *qtp_dial(const char *ip, uint16_t port, bool stream) {
 
     if (ret == 1) { // do nothing
     } else if (ret == 0) { // try ipv6
-        return dialIPv6(ip, port, stream);
+        return dialIPv6(ip, port, key, stream);
     } else if (ret == -1) {
         return NULL;
     }
@@ -204,10 +204,10 @@ QTPConnection *qtp_dial(const char *ip, uint16_t port, bool stream) {
         return NULL;
     }
 
-    return (QTPConnection *)new_connection(sockfd, stream);
+    return (QTPConnection *)new_connection(sockfd, key, stream);
 }
 
-QTPConnection *dialIPv6(const char *ip, uint16_t port, bool stream) {
+QTPConnection *dialIPv6(const char *ip, uint16_t port, unsigned int key, bool stream) {
     struct sockaddr_in6 saddr;
     memset(&saddr, 0, sizeof(saddr));
     saddr.sin6_family = AF_INET6;
@@ -225,5 +225,5 @@ QTPConnection *dialIPv6(const char *ip, uint16_t port, bool stream) {
         return NULL;
     }
 
-    return (QTPConnection *)new_connection(sockfd, stream);
+    return (QTPConnection *)new_connection(sockfd, key, stream);
 }

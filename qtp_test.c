@@ -2,6 +2,7 @@
 #include <sys/time.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "qtpconnection.h"
 
 #define FILENAME "/tmp/filename"
@@ -12,10 +13,10 @@
 int main(int argc, char* argv[]) {
     QTPConnection *conn = NULL;
     if (argc == 1 || (argc > 1 && strcmp(argv[1], "127.0.0.1") == 0)) {
-        conn = qtp_dial("127.0.0.1", PORT, true);
+        conn = qtp_dial("127.0.0.1", PORT, 0x1234, true);
     }
     if (argc > 2) {
-        conn = qtp_dial(argv[1], PORT, true);
+        conn = qtp_dial(argv[1], PORT, 0x1234, true);
     }
     if (conn == NULL) {
         printf("init session failed.[cmd ip op]\n");

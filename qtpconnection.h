@@ -8,7 +8,7 @@
 
 typedef void QTPConnection;
 
-QTPConnection *qtp_dial(const char *ip, uint16_t port, bool stream);
+QTPConnection *qtp_dial(const char *ip, uint16_t port, unsigned int key, bool stream);
 void qtp_update(QTPConnection* conn);
 ssize_t qtp_read(QTPConnection* conn, char *buf, size_t sz);
 ssize_t qtp_write(QTPConnection* conn, const char *buf, size_t sz);

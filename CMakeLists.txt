@@ -33,10 +33,12 @@ add_library(${LIB_NAME} STATIC ${LIB_SOURCES2})
 
 set(MAIN_TEST kcp_test.cpp)
 set(MAIN_TEST2 qtp_test.c)
+set(MAIN_TEST3 qtproxy_client.c)
 set(FEC_TEST fec_test.cpp)
 
 add_executable(kcp_test ${LIB_SOURCES} ${MAIN_TEST})
 add_executable(fec_test ${LIB_SOURCES} ${FEC_TEST})
+target_link_libraries(fec_test ${LIB_NAME})
 
 add_executable(qtp_test ${LIB_SOURCES2} ${MAIN_TEST2})
-target_link_libraries(fec_test ${LIB_NAME})
+add_executable(qtproxy_client ${LIB_SOURCES2} ${MAIN_TEST3})
