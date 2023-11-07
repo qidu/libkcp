@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
+	"bufio"
 	"os"
 	"time"
 
@@ -56,44 +57,66 @@ func server() {
 }
 
 func handle_client(conn *kcp.UDPSession, target string, ch chan int) {
-	count := 0
 	out_total := 0
-	in_total := 0
+	// in_total := 0
 	// writed := 0
 	
-    upstream, _ := net.Dial("tcp", target)
-	fmt.Println("new client", conn.RemoteAddr(), "to", upstream.RemoteAddr())
+    upstream, err := net.Dial("tcp", target)
+	fmt.Println("new client from", conn.RemoteAddr(), "to", upstream.RemoteAddr())
+	if err != nil {
+		fmt.Println("dial remote error.")
+		ch <- 1
+		ch <- 1
+		return
+	}
+	defer upstream.Close()
+
 
 	streamOut := func(stream net.Conn, conn *kcp.UDPSession, ch chan int) {
+        //request := "GET / HTTP/1.1\r\nHost: www.qiniuapi.com\r\n\r\n"
+		//fmt.Printf("%s", request)
+        //fmt.Fprintf(stream, request)
 		buf := make([]byte, 65536)
 		for {
-			count++
-			conn.SetDeadline(time.Now().Add(1 * time.Second))
+			conn.SetDeadline(time.Now().Add(2 * time.Second))
 			n, err := conn.Read(buf)
 			if err != nil {
+            	conn.Write([]byte("bye"))
 				fmt.Println("finish read")
 				ch <- 1
 				break
 			}
 			stream.Write(buf[0:n])	
 			out_total += n
-			fmt.Printf("count %d receive %d total %d\n", count, n, out_total)
+			fmt.Printf("%s", buf[0:n])
+			//fmt.Printf("receive %d total %d\n", n, out_total)
 		}
 	}
 
 	streamIn := func(stream net.Conn, conn *kcp.UDPSession, ch chan int) {
-		buf := make([]byte, 65536)
+		reader := bufio.NewReader(stream)
+		// buf := make([]byte, 65536)
         for {
-            count++
-            n, err := stream.Read(buf)
-            if err != nil {
-				ch <- 1
-				fmt.Println("finish upstream.")
+			line, err := reader.ReadString('\n')
+			if err != nil {
+                conn.Write([]byte("bye"))
+			    fmt.Println("finish upstream.")
+			    ch <- 1
 				break
-            }
-            conn.Write(buf[0:n])
-            in_total += n
-            fmt.Printf("count %d receive %d total %d\n", count, n, in_total)
+			}
+            conn.Write([]byte(line))
+			//fmt.Print(line)
+			
+            //n, err := stream.Read(buf)
+            //if err != nil {
+            //	conn.Write([]byte("bye"))
+			//	fmt.Println("finish upstream.")
+			//	ch <- 1
+			//	break
+            //}
+            //conn.Write(buf[0:n])
+            // in_total += n
+            // fmt.Printf("receive %d total %d\n", n, in_total)
         }
 	}
 
