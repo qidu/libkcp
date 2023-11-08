@@ -60,7 +60,7 @@ void qtp_setstream(QTPConnection* conn_, bool yes) {
 
 int qtp_setdscp(QTPConnection *conn_, int iptos) {
     if (!conn_) return -1;
-    __QTPConnection *conn = (__QTPConnection*)conn;
+    __QTPConnection *conn = (__QTPConnection*)conn_;
     iptos = (iptos << 2) & 0xFF;
     return setsockopt(conn->sockfd, IPPROTO_IP, IP_TOS, &iptos, sizeof(iptos));
 }
