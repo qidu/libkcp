@@ -20,7 +20,6 @@ typedef struct {
 
 static QTPConnection* dialIPv6(const char *ip, uint16_t port, unsigned int key, bool stream);
 static __QTPConnection *new_connection(int sockfd, unsigned int key, bool stream);
-static ssize_t output(QTPConnection *conn, const void *buffer, size_t length);
 static int out_wrapper(const char *buf, int len, struct IKCPCB *kcp, void *user);
 
 uint32_t qtp_current() {
@@ -123,20 +122,13 @@ void qtp_update(QTPConnection *conn_) {
     ikcp_flush((Handle*)conn->handle);
 }
 
-ssize_t output(QTPConnection *conn_, const void *buffer, size_t length) {
-    if (!conn_) return 0;
-    __QTPConnection *conn = (__QTPConnection*)conn_;
-    ssize_t n = send(conn->sockfd, buffer, length, 0);
-    return n;
-}
-
 int out_wrapper(const char *buf, int len, struct IKCPCB *kcp, void *user) {
     if (!kcp || !user || !buf || len <= 0) {
         return -1;
     }
     __QTPConnection *conn = (__QTPConnection *)user;
     // No FEC, just send raw bytes,
-    output(conn, buf, len);
+    send(conn->sockfd, buf, len, 0);
     return 0;
 }
 
